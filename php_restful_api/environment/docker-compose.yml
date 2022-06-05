@@ -1,0 +1,95 @@
+version: '3'
+
+networks:
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge
+
+services:
+  php-fpm:
+    image: api-php-fpm
+    build:
+      context: ./php-fpm
+    container_name: api-php
+    working_dir: /web
+    volumes:
+      - ../web:/web
+      - ../.env:/web/.env
+    tty: true
+    networks:
+      - frontend
+      - backend
+
+  nginx:
+    image: api-nginx
+    build:
+      context: ./nginx
+    container_name: api-nginx
+    working_dir: /web
+    volumes_from:
+      - php-fpm
+    depends_on:
+      - php-fpm
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - frontend
+
+  mysql:
+    image: api-mysql
+    build:
+      context: ./mysql
+    container_name: api-mysql
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+    volumes:
+      - ./mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ./mysql/data:/var/lib/mysql
+    networks:
+      - backend
+
+  phpmyadmin:
+    image: api-mysql-admin
+    build:
+      context: ./phpmyadmin
+    container_name: api-mysql-admin
+    restart: always
+    depends_on:
+      - mysql
+    environment:
+      - PMA_HOST=api-mysql
+      - PMA_ABSOLUTE_URI="${PHP_MY_ADMIN_DOMAIN}"
+      - PMA_USER=root
+      - PMA_PASSWORD=secret
+    networks:
+      - frontend
+      - backend
+
+  syslog-ng:
+    image: api-syslog-ng
+    build:
+      context: ./syslog-ng
+    container_name: api-syslog-ng
+    volumes:
+      - ../logs/nginx:/var/log/nginx
+      - ../logs/fpm:/var/log/fpm
+    environment:
+      SYSLOG_DRIVER: file
+    networks:
+      - frontend
+    command: "--no-caps"
+
+  memcached:
+    image: api-memcached
+    build:
+      context: ./memcached
+    container_name: api-memcached
+    volumes:
+      - ./memcached/data:/var/lib/memcached
+    depends_on:
+      - php-fpm
+    networks:
+      - frontend

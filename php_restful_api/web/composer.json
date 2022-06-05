@@ -1,0 +1,74 @@
+{
+    "name": "tinny/api",
+    "type": "project",
+    "description": "Tinny API",
+    "keywords": [
+        "framework",
+        "laravel",
+        "API"
+    ],
+    "license": "MIT",
+    "require": {
+        "php": "^7.3|^8.0",
+        "fideloper/proxy": "^4.4",
+        "fruitcake/laravel-cors": "^2.0",
+        "guzzlehttp/guzzle": "^7.0.1",
+        "laravel/framework": "^8.12",
+        "laravel/passport": "^10.1",
+        "laravel/tinker": "^2.5",
+        "laravel/ui": "^3.2",
+        "spatie/laravel-query-builder": "^3.4",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "facade/ignition": "^2.5",
+        "fakerphp/faker": "^1.9.1",
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "laravel/sail": "^1.0.1",
+        "mockery/mockery": "^1.4.2",
+        "nunomaduro/collision": "^5.0",
+        "phpunit/phpunit": "^9.3.3",
+        "squizlabs/php_codesniffer": "^3.5"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": []
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "TinnyApi\\": "src/",
+            "Database\\Factories\\": "src/Factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "scripts": {
+        "tests": "./vendor/bin/phpunit -c phpunit.xml tests/",
+        "coverage": "./vendor/bin/phpunit -d memory_limit=2048M -c phpunit.xml tests/  --coverage-html ./tests/coverage --coverage-clover coverage.xml",
+        "psr-check": "./vendor/bin/phpcs --standard=PSR2 --colors ./src",
+        "compile-app-cache": [
+            "php artisan route:cache",
+            "php artisan config:cache"
+        ],
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate --ansi"
+        ]
+    }
+}

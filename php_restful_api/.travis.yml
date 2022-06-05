@@ -1,0 +1,39 @@
+language: php
+
+php:
+  - '7.3'
+
+os: linux
+
+services:
+  - mysql
+
+before_script:
+  - echo 'xdebug.mode=coverage' >>  ~/.phpenv/versions/7.3/etc/php.ini
+  - cp ./config/.env.testing ./web/.env
+  - mysql -e 'create database db_testing;'
+  - travis_retry composer self-update -d web
+  - travis_retry composer install --prefer-source --no-interaction --dev -d web --optimize-autoloader
+  - cd web && php artisan key:generate && php artisan config:clear
+
+script:
+  - composer psr-check
+  - composer coverage
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -t 'a55e3e8e-e439-4626-af0b-f5371161d77e'
+
+branches:
+  except:
+    - master
+
+cache:
+  directories:
+    - $HOME/.composer/cache/files
+
+notifications:
+  email: false
+  slack:
+    on_success: always
+    rooms:
+      - gaminglake:IEwp6isRxPevEqmkWBnflBa3
